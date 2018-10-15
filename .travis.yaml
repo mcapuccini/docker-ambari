@@ -1,0 +1,68 @@
+---
+language: python
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+env:
+  global:
+    - YAMLLINT_VERSION=1.8.1
+    - HADOLINT_VERSION=latest
+    - DOCKER_USERNAME=mcapuccini
+    - secure: >
+        WxO1ovN5/1eGCxEPE6gS63L8uejPCdDVHl6invGaR+ZwvqkOYZzKQGwC1IcoLnsGp+aUcBEyzt/EuW+MTpwRGyzmVH/
+        jTCEvCwfR7w+V7pHD37bEFej2VhNvdli5ZTXYLsV+NZ9eHRI2WUfRA9+WmW8qIEahQqfGA6KuFVEDDrp0eyQer7l+yx
+        kL4ckfMAZIHVpthXpXo2vwilpll8A7V0jz6G+u1q3wV6y4RPX9gLielG/BxXolbROTrpjAemXQO8RD2EBvslV8kfSiy
+        vJuyljEc7H9sVMV524OrRW9KXH9IZN/9F13IDq9fdUqP2GM08qYEkW3uIq/uHFfk+K84a3icFefn89F1S+fvORMrNM0
+        9ZopJyiBFV8OyZlod6QG5SuMw5285MCMcaKsEsqky50BmS61cyOKNY6gZFo++TwlcJbgP5Bn/dfxDCuk5hmpaEtnooa
+        4W+pZrH82Ty13eBS7Fjbz8bexfwoukNVDWtAB7klNx0pDheKOuqM8s1J93FaCSnGOIIg9uHFpTV5CjbtoeVZoP9OpXq
+        5Blw0Gvn4oywVouxdVeFK7dtEzXYcVGLKzCQ02CwKjOrdj+Lp5ZswHx//2Y9HK/r9LLYdRDn4/wHV7iEoR7kMSpnsRg
+        Yx1lo36kCdRj58QNQpw4iXSkYwGf5RVB/GDIm1JecHVRgI=
+  matrix:
+    - >
+      BASE_TAG=mcapuccini/ambari-base:2.7.1.0
+      SERVER_TAG=mcapuccini/ambari-server:2.7.1.0
+      AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0
+      BASE_IMAGE=debian:9-slim
+      AMBARI_VERSION=2.7.1.0
+      AMBARI_LIST_URL=http://public-repo-1.hortonworks.com/ambari/debian9/2.x/updates/2.7.1.0/ambari.list
+      AMBARI_GPG_KEY=B9733A7A07513CAD
+
+install:
+  - docker pull $BASE_IMAGE
+  - docker pull lukasmartinelli/hadolint:$HADOLINT_VERSION
+  - docker pull boiyaa/yamllint:$YAMLLINT_VERSION
+
+before_script:
+  # Check code format
+  - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.base
+  - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.agent
+  - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.server
+  - docker run -v "$PWD:/workdir" "boiyaa/yamllint:$YAMLLINT_VERSION" -c .yamllint.yml -s $(find . -name '*.yml')
+
+script:
+  # Build base image
+  - >
+    docker build --tag $BASE_TAG
+    --build-arg BASE_IMAGE=$BASE_IMAGE
+    --build-arg AMBARI_VERSION=$AMBARI_VERSION
+    --build-arg AMBARI_LIST_URL=$AMBARI_LIST_URL
+    --build-arg=AMBARI_GPG_KEY=$AMBARI_GPG_KEY
+    --file Dockerfile.base .
+  # Build server image
+  - docker build --tag $SERVER_TAG --build-arg BASE_IMAGE=$BASE_TAG --file Dockerfile.server .
+  # Build agent image
+  - docker build --tag $AGENT_TAG --build-arg BASE_IMAGE=$BASE_TAG --file Dockerfile.agent .
+
+after_success:
+  - >
+    if [ $TRAVIS_BRANCH = 'master' ] && [ $TRAVIS_PULL_REQUEST = 'false' ]; then
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+      docker push $BASE_TAG
+      docker push $SERVER_TAG
+      docker push $AGENT_TAG
+    fi
