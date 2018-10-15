@@ -9,4 +9,5 @@ RUN apt-get -y update && \
     mkdir -p /usr/share/man/man7 && \
     apt-get -y install ambari-server && \
     apt-get -y autoremove && \
-    apt-get clean
+    apt-get clean && \
+    ambari-server setup --silent
