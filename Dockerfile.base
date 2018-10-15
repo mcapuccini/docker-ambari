@@ -1,0 +1,18 @@
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+ARG AMBARI_VERSION
+ARG AMBARI_LIST_URL
+ARG AMBARI_GPG_KEY
+
+LABEL maintainer="Marco Capuccini <marco.capuccini@it.uu.se>" \
+      ambari.version=${AMBARI_VERSION} \
+      ambari.list_url=${AMBARI_LIST_URL}
+
+RUN apt-get -y update && \
+    apt-get -y install wget gnupg2 && \
+    wget -O /etc/apt/sources.list.d/ambari.list "$AMBARI_LIST_URL" && \
+    apt-key adv --recv-keys --keyserver keyserver.ubuntu.com "$AMBARI_GPG_KEY" && \
+    apt-get -y remove wget gnupg2 && \
+    apt-get -y autoremove && \
+    apt-get clean

@@ -1,0 +1,10 @@
+ARG BASE_IMAGE
+FROM $BASE_IMAGE
+
+LABEL maintainer="Marco Capuccini <marco.capuccini@it.uu.se>" \
+      ambari.role="agent"
+
+RUN apt-get -y update && \
+    apt-get install -y ambari-agent && \
+    apt-get -y autoremove && \
+    apt-get clean
