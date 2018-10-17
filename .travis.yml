@@ -27,10 +27,14 @@ env:
       BASE_TAG=mcapuccini/ambari-base:2.7.1.0
       SERVER_TAG=mcapuccini/ambari-server:2.7.1.0
       AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0
+      DB_TAG=mcapuccini/ambari-db:2.7.1.0
       BASE_IMAGE=debian:9-slim
+      POSTEGRES_IMG_VERSION=10.5-alpine
       AMBARI_VERSION=2.7.1.0
       AMBARI_LIST_URL=http://public-repo-1.hortonworks.com/ambari/debian9/2.x/updates/2.7.1.0/ambari.list
       AMBARI_GPG_KEY=B9733A7A07513CAD
+      AMBARI_SQL_SCHEMA_VERSION=2.7.1
+      AMBARI_DDL_URL=https://raw.githubusercontent.com/apache/ambari/release-2.7.1/ambari-server/src/main/resources/Ambari-DDL-Postgres-CREATE.sql
 
 install:
   - docker pull $BASE_IMAGE
@@ -42,6 +46,7 @@ before_script:
   - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.base
   - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.agent
   - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.server
+  - docker run lukasmartinelli/hadolint:$HADOLINT_VERSION hadolint --ignore DL3015 --ignore DL3008 - < Dockerfile.db
   - docker run -v "$PWD:/workdir" "boiyaa/yamllint:$YAMLLINT_VERSION" -c .yamllint.yml -s $(find . -name '*.yml')
 
 script:
@@ -57,6 +62,13 @@ script:
   - docker build --tag $SERVER_TAG --build-arg BASE_IMAGE=$BASE_TAG --file Dockerfile.server .
   # Build agent image
   - docker build --tag $AGENT_TAG --build-arg BASE_IMAGE=$BASE_TAG --file Dockerfile.agent .
+  # Build DB image
+  - >
+    docker build --tag $DB_TAG
+    --build-arg AMBARI_DDL_URL=$AMBARI_DDL_URL
+    --build-arg AMBARI_SQL_SCHEMA_VERSION=$AMBARI_SQL_SCHEMA_VERSION
+    --build-arg POSTEGRES_IMG_VERSION=$POSTEGRES_IMG_VERSION
+    --file Dockerfile.db .
 
 after_success:
   - >
@@ -65,4 +77,5 @@ after_success:
       docker push $BASE_TAG
       docker push $SERVER_TAG
       docker push $AGENT_TAG
+      docker push $DB_TAG
     fi
