@@ -1,0 +1,14 @@
+ARG POSTEGRES_IMG_VERSION
+FROM postgres:${POSTEGRES_IMG_VERSION}
+
+ARG AMBARI_DDL_URL
+ARG AMBARI_SQL_SCHEMA_VERSION
+
+ENV AMBARI_DDL_URL=$AMBARI_DDL_URL
+
+LABEL maintainer="Marco Capuccini <marco.capuccini@it.uu.se>"
+
+ADD bin/100-ambari.sh /docker-entrypoint-initdb.d
+RUN mkdir /etc/ambari && \
+    wget -O /etc/ambari/Ambari-DDL-Postgres-CREATE.sql $AMBARI_DDL_URL && \
+    sed -i "s/\${ambariSchemaVersion}/$AMBARI_SQL_SCHEMA_VERSION/g" /etc/ambari/Ambari-DDL-Postgres-CREATE.sql
