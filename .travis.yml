@@ -59,7 +59,7 @@ env:
       AMBARI_GPG_KEY=B9733A7A07513CAD
       AMBARI_SQL_SCHEMA_VERSION=2.7.1
       AMBARI_DDL_URL=https://raw.githubusercontent.com/apache/ambari/release-2.7.1/ambari-server/src/main/resources/Ambari-DDL-Postgres-CREATE.sql
-    
+
 install:
   - docker pull $BASE_IMAGE
   - docker pull lukasmartinelli/hadolint:$HADOLINT_VERSION
