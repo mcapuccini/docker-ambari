@@ -24,10 +24,10 @@ env:
         Yx1lo36kCdRj58QNQpw4iXSkYwGf5RVB/GDIm1JecHVRgI=
   matrix:
     - >
-      BASE_TAG=mcapuccini/ambari-base:2.7.1.0
-      SERVER_TAG=mcapuccini/ambari-server:2.7.1.0
-      AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0
-      DB_TAG=mcapuccini/ambari-db:2.7.1.0
+      BASE_TAG=mcapuccini/ambari-base:2.7.1.0-slim
+      SERVER_TAG=mcapuccini/ambari-server:2.7.1.0-slim
+      AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0-slim
+      DB_TAG=mcapuccini/ambari-db:2.7.1.0-slim
       BASE_IMAGE=debian:9-slim
       POSTEGRES_IMG_VERSION=10.5-alpine
       AMBARI_VERSION=2.7.1.0
@@ -35,7 +35,31 @@ env:
       AMBARI_GPG_KEY=B9733A7A07513CAD
       AMBARI_SQL_SCHEMA_VERSION=2.7.1
       AMBARI_DDL_URL=https://raw.githubusercontent.com/apache/ambari/release-2.7.1/ambari-server/src/main/resources/Ambari-DDL-Postgres-CREATE.sql
-
+    - >
+      BASE_TAG=mcapuccini/ambari-base:2.7.1.0
+      SERVER_TAG=mcapuccini/ambari-server:2.7.1.0
+      AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0
+      DB_TAG=mcapuccini/ambari-db:2.7.1.0
+      BASE_IMAGE=debian:9
+      POSTEGRES_IMG_VERSION=10.5-alpine
+      AMBARI_VERSION=2.7.1.0
+      AMBARI_LIST_URL=http://public-repo-1.hortonworks.com/ambari/debian9/2.x/updates/2.7.1.0/ambari.list
+      AMBARI_GPG_KEY=B9733A7A07513CAD
+      AMBARI_SQL_SCHEMA_VERSION=2.7.1
+      AMBARI_DDL_URL=https://raw.githubusercontent.com/apache/ambari/release-2.7.1/ambari-server/src/main/resources/Ambari-DDL-Postgres-CREATE.sql
+    - >
+      BASE_TAG=mcapuccini/ambari-base:2.7.1.0-ubuntu
+      SERVER_TAG=mcapuccini/ambari-server:2.7.1.0-ubuntu
+      AGENT_TAG=mcapuccini/ambari-agent:2.7.1.0-ubuntu
+      DB_TAG=mcapuccini/ambari-db:2.7.1.0-ubuntu
+      BASE_IMAGE=ubuntu:xenial
+      POSTEGRES_IMG_VERSION=10.5-alpine
+      AMBARI_VERSION=2.7.1.0
+      AMBARI_LIST_URL=http://public-repo-1.hortonworks.com/ambari/debian9/2.x/updates/2.7.1.0/ambari.list
+      AMBARI_GPG_KEY=B9733A7A07513CAD
+      AMBARI_SQL_SCHEMA_VERSION=2.7.1
+      AMBARI_DDL_URL=https://raw.githubusercontent.com/apache/ambari/release-2.7.1/ambari-server/src/main/resources/Ambari-DDL-Postgres-CREATE.sql
+    
 install:
   - docker pull $BASE_IMAGE
   - docker pull lukasmartinelli/hadolint:$HADOLINT_VERSION
